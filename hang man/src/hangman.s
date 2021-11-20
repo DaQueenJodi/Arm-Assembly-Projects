@@ -27,7 +27,8 @@ _correct_guess:
 
 
 leave_guess:
-	b main_loop	 
+	pop {r4-r11}
+	pop {pc}
 
 
 read_input:
@@ -40,7 +41,7 @@ read_input:
 	mov r7, #0x3
 	mov r0, #0x0 
 	pop {r1}
-	pop {r2}
+	//pop {r2}
 	svc 0x0
 
 	pop {r4-r11}
@@ -81,7 +82,7 @@ nl:
 	//pop {r1}
 	mov r7, #0x4
 	mov r0, #0x1
-	mov r2, #0x1
+	mov r2, #0x2
 	ldr r1, =newline
 	svc 0x0
 
@@ -104,19 +105,21 @@ main_loop:
 	push {lr}
 	push {r4-r11}
 	
-	ldr r1, =hidden_word
-	ldr r2, =len
-	bl print_str
-
 	//set guess
 	ldr r2, =0x12
 	ldr r1, =guess_promt 
 	bl print_str
-	ldrb r0, =guess
+	
+	ldr r0, =guess
 	mov r1, #0x1
+	
 	bl read_input
 
 	bl check_guess
+
+	ldr r1, =hidden_word
+	ldr r2, =len
+	bl print_str
 
 
 
@@ -158,6 +161,7 @@ leave_hidden_loop:
 	ldr r1, =hidden_word
 	bl print_str
 	bl nl
+	ldr r2, =len
 	ldr r1, =real_word
 	bl print_str
 	bl nl
@@ -187,7 +191,7 @@ len = .-real_word
 hidden_word:
 	.skip len
 newline:
-	.asciz "\n"
+	.asciz "\n\n"
 guess_promt:
 	.asciz "Enter your guess:\n"
 
