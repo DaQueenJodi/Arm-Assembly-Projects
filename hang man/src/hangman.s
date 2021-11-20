@@ -6,13 +6,14 @@
 check_guess:
 	push {lr}
 	push {r4-r11}
-	mov r3, #0 //counter 
+	mov r5, #0 //counter 
 
 _loop_guess:
-	ldr r4, =hidden_word
-	ldrb r1, =guess
-	ldrb r2, [r4, r3] //load current byte of hidden_word
-	add r3, r3, #1 //increment counter
+	ldr r3, =hidden_word
+	ldr r4, =guess
+	ldrb r1, [r4]
+	ldrb r2, [r3, r5] //load current byte of hidden_word
+	add r5, r5, #1 //increment counter
 
 	cmp r2, #0x0
 	beq leave_guess
@@ -41,7 +42,7 @@ read_input:
 	mov r7, #0x3
 	mov r0, #0x0 
 	pop {r1}
-	//pop {r2}
+	pop {r2}
 	svc 0x0
 
 	pop {r4-r11}
@@ -102,6 +103,11 @@ print_str:
 	pop {pc}
 
 main_loop:
+
+	ldr r1, =hidden_word
+	ldr r2, =len
+	bl print_str
+
 	push {lr}
 	push {r4-r11}
 	
@@ -111,17 +117,12 @@ main_loop:
 	bl print_str
 	
 	ldr r0, =guess
-	mov r1, #0x1
-	
+	mov r1, #0x1 // 1 char answer, 1 byte for null
 	bl read_input
 
 	bl check_guess
 
-	ldr r1, =hidden_word
-	ldr r2, =len
-	bl print_str
-
-
+	
 
 	pop {r4-r11}
 	pop {pc}
@@ -165,9 +166,9 @@ leave_hidden_loop:
 	ldr r1, =real_word
 	bl print_str
 	bl nl
-	pop {r4, r11}
-	//pop {pc}
-	b main_loop
+	pop {r4-r11}
+	pop {pc}
+	//b main_loop
 _start:	
 	
 	bl gen_hidden_word
