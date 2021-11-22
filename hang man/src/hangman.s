@@ -8,25 +8,46 @@ check_guess:
 	push {r4-r11}
 	mov r5, #0 //counter 
 
+	
+
+_loop_guess:
+
 	ldr r3, =real_word
 	ldr r2, =hidden_word
 	ldr r1, =guess
 	ldrb r1, [r1]
 
-_loop_guess:
-	ldrb r3, [r2, r5] //load current byte of real_word
-	add r5, r5, #1 //increment counter
-
-	cmp r2, #0x0
+	//ldrb r2, [r2, r5] // load current byte of hidden_word
+	ldrb r3, [r3, r5] //load current byte of real_word
+	
+	// if r3 is null (end of string), then leave
+	cmp r3, #0x0
 	beq leave_guess
-	cmp r2, r1 
+
+	//elif guess is space, then pass
+	cmp r3, #0x20 
+	beq _guess_space
+
+	//elif guess == current byte of real world, then  
+	cmp r3, r1 
 	beq _correct_guess
+
+	//else, then just increment counter 
+	add r5, r5, #0x1 
+	b _loop_guess
+
+_guess_space:
+	add r5, r5, #0x1
+	b _loop_guess
 _correct_guess:
 	//replace the current byte of hidden word with the guess, then print that you guessed right
-	strb r2, [r1]
+	strb r1, [r2, r5]
 	ldr r1, =corr_guess_message
-	ldr r2, =0x13
+	ldr r2, =corr_guess_len
 	bl print_str
+	bl nl
+	add r5, r5, #1 //increment counter
+	b _loop_guess
 
 
 leave_guess:
@@ -105,26 +126,29 @@ print_str:
 	pop {pc}
 
 main_loop:
-
-	ldr r1, =hidden_word
-	ldr r2, =len
-	bl print_str
-
 	push {lr}
 	push {r4-r11}
-	
-	//set guess
-	ldr r2, =0x12
+		
+	// print hidden word
+	ldr r1, =hidden_word
+	ldr r2, =word_len
+	bl print_str
+	bl nl 
+
+	// set guess, then see if guess is in real_word and replace hidden_word accordingly
+
+	ldr r2, =guess_prompt_len
 	ldr r1, =guess_promt 
 	bl print_str
-	
+	 
 	ldr r0, =guess
 	mov r1, #0x1 // 1 char answer, 1 byte for null
 	bl read_input
 
 	bl check_guess
 
-	
+	//reset loop
+	b main_loop
 
 	pop {r4-r11}
 	pop {pc}
@@ -135,13 +159,12 @@ gen_hidden_word:
 	mov r5, #0x0 //counter
 	mov r6, #0x20 //space
 	mov r7, #0x5f //underscore
+	ldr r4, =real_word
+	ldr r2, =hidden_word
 	
 
 _hidden_word_loop:
-	ldr r3, =real_word
-	ldr r4, =hidden_word
-	ldrb r1, [r3, r5] // curr byte of real_word
-	//ldrb r2, [r4, r5] //curr byte of hidden_word
+	ldrb r1, [r4, r5] // curr byte of real_word
 	add r5, r5, #0x1
 
 	//if NULL, leave loop (word is done):
@@ -152,19 +175,19 @@ _hidden_word_loop:
 	bne _add_underscore
 	//else add a space:
 _add_space:
-	strb r6, [r4, r5]
+	strb r6, [r2, r5]
 	b _hidden_word_loop
 _add_underscore:
-	strb r7, [r4, r5]
+	strb r7, [r2, r5]
 	b _hidden_word_loop
 		
 leave_hidden_loop:
 // print hidden_word then real_word; just for debug
-	ldr r2, =len
+	ldr r2, =word_len
 	ldr r1, =hidden_word
 	bl print_str
 	bl nl
-	ldr r2, =len
+	ldr r2, =word_len
 	ldr r1, =real_word
 	bl print_str
 	bl nl
@@ -187,18 +210,20 @@ _start:
 
 real_word:
 	.asciz "W e lp"
+	word_len = .-real_word
 guess:
 	.skip 1
-len = .-real_word
 
 hidden_word:
-	.skip len
+	.skip word_len
 newline:
 	.asciz "\n\n"
 guess_promt:
 	.asciz "Enter your guess:\n"
+	guess_prompt_len = .-guess_promt
 
 corr_guess_message:
-	.asciz "Pog, You got 1 right!\n"
+	.asciz "Pog, You got 1 right!"
+	corr_guess_len = .-corr_guess_message
 
 
