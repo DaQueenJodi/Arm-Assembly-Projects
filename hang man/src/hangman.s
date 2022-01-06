@@ -138,11 +138,11 @@ main_loop:
 	// set guess, then see if guess is in real_word and replace hidden_word accordingly
 
 	ldr r2, =guess_prompt_len
-	ldr r1, =guess_promt 
+	ldr r1, =guess_prompt 
 	bl print_str
 	 
 	ldr r0, =guess
-	mov r1, #0x1 // 1 char answer, 1 byte for null
+	mov r1, #0x1 // 1 char answer
 	bl read_input
 
 	bl check_guess
@@ -218,9 +218,9 @@ hidden_word:
 	.skip word_len
 newline:
 	.asciz "\n\n"
-guess_promt:
+guess_prompt:
 	.asciz "Enter your guess:\n"
-	guess_prompt_len = .-guess_promt
+	guess_prompt_len = .-guess_prompt
 
 corr_guess_message:
 	.asciz "Pog, You got 1 right!"
