@@ -4,9 +4,28 @@
 
 
 _start:
-		MOV r0, #400
-		MOV r1, #12
-		BL mod // mod(4, 3)
+
+		// get 2 numbers from user
+		LDR r0, =input0
+		BL get_input
+		LDR r0, =input1
+		BL get_input
+
+		// save both inputs to register 0 and 1
+		LDR r0, =input0
+		//LDR r0, [r0]
+		BL atoi
+		MOV r4, r0 // save result
+		//LDR r0, input1
+		LDR r0, =input1
+		BL atoi
+		MOV r5, r0 // save result
+
+		MOV r0, r4 // input2 as int
+		MOV r1, r5 //input1 as int
+
+		// print the result of input0 % input1 
+		BL mod 
 		BL itos
 		BL print
 
@@ -41,34 +60,37 @@ atoi:
 	MOV r5, #0 // counter
 	MOV r6, #1 // multiplier
 	MOV r7, #0 // length
-	MOV r11, #0 // result
+	MOV r10, #0 // result
 	MOV r3, #10 // multiplier multiplier (can't use immediate with MUL for whatever reason)
 
-_atio_iter:
+_atoi_iter:
 	LDRB r8, [r4]
-	CMP r9, #0xa // check if newline
+	CMP r8, #0xa // check if newline
 	BEQ _atoi_loop
 
 	ADD r4, r4, #1
-	ADD r7, r7
+	ADD r7, r7, #1
+	B _atoi_iter
 
 _atoi_loop:
 	SUB r4, r4, #1 // decrement 
 	LDRB r8, [r4]
 	SUB r8, r8, #0x30 // convert to int 
 
-	MUL r10, r8, r6 // multiply curr num by multiplier
-	MOV r8, r10
+	MUL r9, r8, r6 // multiply curr num by multiplier
+	MOV r8, r9
 	// MUL makes me store the result in a different register for some reason
-	MUL r2, r6, r3 // multiply the multiplier by 10 to match the current "place" in the number  
-	MOV r6, r2
-	SUB r7, r7
+	MUL r8, r6, r3 // multiply the multiplier by 10 to match the current "place" in the number  
+	MOV r6, r8
+	ADD r10, r10, r8
+
+	SUB r7, r7, #1 // decrement length
 	CMP r7, #0x0 // check curr character is NULL
 	BEQ _atoi_leave
 	B _atoi_loop // loop!
 
 _atoi_leave:
-	MOV r0, r11
+	MOV r0, r9
 
 	POP {r4-r11}
 	POP {LR}
@@ -86,7 +108,7 @@ itos:
 
 _itos_loop:
 	MOV r8, #0x0
-	UDIV r8, r4, r7 // divide current digit by divisor
+	UDIV r8, r4, r6 // divide current digit by divisor
 	ADD r8, r8,  #0x30 // convert digit to char
 
 	LDR r9, =buff
@@ -128,8 +150,21 @@ print:
 		POP {r4-r11}
 		BX lr
 
+get_input:
+	push {LR}
+	push {r4-r11}
 
+	MOV r7, #3 // Read
+	MOV r1, r0 // input buffer
+	MOV r0, #0x0 // stdin
+	MOV r2, #0x8
+	SVC 0
+
+	POP {r4-r11}
+	BX lr
 
 .section .data
 	buff: .skip 8 // 8 byte buffer, good 'nuff
+	input0: .skip 8
+	input1: .skip 8
 

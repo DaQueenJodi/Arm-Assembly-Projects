@@ -16,5 +16,7 @@ clean:
 
 test: $(program_NAME)
 	qemu-arm $(program_NAME)
+debug: $(program_NAME)
+	qemu-arm -singlestep -g 1234 $(program_NAME)
 
 distclean: clean
