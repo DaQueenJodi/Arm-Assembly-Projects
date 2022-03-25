@@ -50,52 +50,42 @@ mod:
 	//epilogue
 	POP {r4-r11}
 	BX lr // return result
-
 atoi:
-	PUSH {lr} // preserve LR because we are going to go to other subroutines
-	PUSH {r4-r11}
-	
-	MOV r4, r0
+		PUSH {lr}
+		PUSH {r4-r11}
+		
+		MOV r4, r0
+		MOV r5, #0x0 //str length counter
+		MOV r6, #0x0 //end state counter value
+		MOV r7, #1 //multiplier
+		MOV r8, #10 //multiplier multiplier
 
-	MOV r5, #0 // counter
-	MOV r6, #1 // multiplier
-	MOV r7, #0 // length
-	MOV r10, #0 // result
-	MOV r3, #10 // multiplier multiplier (can't use immediate with MUL for whatever reason)
-
-_atoi_iter:
-	LDRB r8, [r4]
-	CMP r8, #0xa // check if newline
-	BEQ _atoi_loop
-
-	ADD r4, r4, #1
-	ADD r7, r7, #1
-	B _atoi_iter
-
-_atoi_loop:
-	SUB r4, r4, #1 // decrement 
-	LDRB r8, [r4]
-	SUB r8, r8, #0x30 // convert to int 
-
-	MUL r9, r8, r6 // multiply curr num by multiplier
-	MOV r8, r9
-	// MUL makes me store the result in a different register for some reason
-	MUL r8, r6, r3 // multiply the multiplier by 10 to match the current "place" in the number  
-	MOV r6, r8
-	ADD r10, r10, r8
-
-	SUB r7, r7, #1 // decrement length
-	CMP r7, #0x0 // check curr character is NULL
-	BEQ _atoi_leave
-	B _atoi_loop // loop!
-
+_string_length_loop:
+		LDRB r9, [r4]
+		CMP r9, #0xa
+		BEQ _count
+		ADD r4, r4, #1
+		ADD r5, r5, #1
+		B _string_length_loop
+_count:
+		SUB r4, r4, #1 
+		LDRB r9, [r4] //first number in string
+		SUB r9, r9, #0x30 //get the integer value from the ascii number. all ascii numbers are just 0x30 off from the real int
+		MUL r10, r9, r7 // current place * number
+		MOV r9, r10
+		MUL r10, r7, r8 //incriment the placeholder
+		MOV r7, r10
+		ADD r6, r6, r9 //add current number to counter
+		SUB r5, r5, #1 //decrement length, check for end
+		CMP r5, #0x0
+		BEQ _atoi_leave 
+		B _count
 _atoi_leave:
-	MOV r0, r9
+		MOV r0, r6 
 
-	POP {r4-r11}
-	POP {LR}
-	BX lr
-// converts char to int and saves it to the buffer variable stored in memory (see .section .data)
+		POP {r4-r11}
+		POp {pc}
+
 itos:
 	PUSH {lr}
 	PUSH {r4-r11}
