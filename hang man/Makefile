@@ -5,14 +5,18 @@ program_OBJS	:=	$(program_CXX_OBJS)
 .PHONY: all clean distclean
 
 all: $(program_CXX_OBJS)
-	arm-none-eabi-ld $(program_OBJS) -o $(program_NAME)
+	arm-none-eabi-ld $(program_OBJS) -g -o $(program_NAME)
 
 $(program_OBJS): $(program_CXX_SRCS)
-	arm-none-eabi-as $(program_CXX_SRCS) -g  -o $(program_OBJS)
-	
+	arm-none-eabi-as $(program_CXX_SRCS) -g -o $(program_OBJS)
 
 clean:
 	@- $(RM) $(program_NAME)
 	@- $(RM) $(program_CXX_OBJS)
+
+test: $(program_NAME)
+	qemu-arm $(program_NAME)
+debug: $(program_NAME)
+	qemu-arm -singlestep -g 1234 $(program_NAME)
 
 distclean: clean

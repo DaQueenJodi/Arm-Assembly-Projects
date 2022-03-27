@@ -8,12 +8,12 @@
 read_user_input:
 		push {lr}
 		push {r4-r11}
-		
+
 		push {r1}
 		push {r0}
 
 		mov r7, #0x3
-		mov r0, #0x0 
+		mov r0, #0x0
 		pop {r1}
 		pop {r2}
 		svc 0x0
@@ -37,7 +37,7 @@ _string_length_loop:
 		add r2, r2, #1
 		b _string_length_loop
 _count:
-		sub r0, r0, #1 
+		sub r0, r0, #1
 		ldrb r8, [r0] //first number in string
 		sub r8, r8, #0x30 //get the integer value from the ascii number. all ascii numbers are just 0x30 off from the real int
 		mul r4, r8, r6 // current place * number
@@ -47,10 +47,10 @@ _count:
 		add r5, r5, r8 //add current number to counter
 		sub r2, r2, #1 //decrement length, check for end
 		cmp r2, #0x0
-		beq _leave 
+		beq _leave
 		b _count
 _leave:
-		mov r0, r5 
+		mov r0, r5
 
 		pop {r4-r11}
 		pop {pc}
@@ -101,7 +101,7 @@ display:
 
 		mov r7, #0x4 //std out
 		mov r0, #0x1
-		ldr r1, =sum 
+		ldr r1, =sum
 		mov r2, #0x8 //one byte stream
 		svc 0x0
 
@@ -109,7 +109,7 @@ display:
 		pop {pc}
 
 _start:
-		
+
 		//read user input
 		ldr r0, =first
 		ldr r1, =0x6 //reserve 2 bytes for null and new line
@@ -122,14 +122,14 @@ _start:
 
 		ldr r0, =first
 		bl my_atoi
-		mov r4, r0 
+		mov r4, r0
 
 		ldr r0, =second
 		bl my_atoi
 		mov r5, r0
 
 		// add the 2 inputs (r4 = first, r5 = first) and put it into r0
-		add r0, r4, r5 
+		add r0, r4, r5
 
 
 		bl int_to_string

@@ -24,8 +24,8 @@ _start:
 		MOV r0, r4 // input2 as int
 		MOV r1, r5 //input1 as int
 
-		// print the result of input0 % input1 
-		BL mod 
+		// print the result of input0 % input1
+		BL mod
 		BL itos
 		BL print
 
@@ -46,14 +46,14 @@ mod:
 	UDIV r6, r4, r5 // int var0 = arg1 / arg0
 	MUL  r7, r6, r5 // int var1 = var0 * arg1
 	SUB	 r0, r4, r7 // int result = arg0 - var1
-	
+
 	//epilogue
 	POP {r4-r11}
 	BX lr // return result
 atoi:
 		PUSH {lr}
 		PUSH {r4-r11}
-		
+
 		MOV r4, r0
 		MOV r5, #0x0 //str length counter
 		MOV r6, #0x0 //end state counter value
@@ -68,7 +68,7 @@ _string_length_loop:
 		ADD r5, r5, #1
 		B _string_length_loop
 _count:
-		SUB r4, r4, #1 
+		SUB r4, r4, #1
 		LDRB r9, [r4] //first number in string
 		SUB r9, r9, #0x30 //get the integer value from the ascii number. all ascii numbers are just 0x30 off from the real int
 		MUL r10, r9, r7 // current place * number
@@ -78,21 +78,21 @@ _count:
 		ADD r6, r6, r9 //add current number to counter
 		SUB r5, r5, #1 //decrement length, check for end
 		CMP r5, #0x0
-		BEQ _atoi_leave 
+		BEQ _atoi_leave
 		B _count
 _atoi_leave:
-		MOV r0, r6 
+		MOV r0, r6
 
 		POP {r4-r11}
-		POp {pc}
+		POP {pc}
 
 itos:
 	PUSH {lr}
 	PUSH {r4-r11}
 
-	MOV r4, r0 
+	MOV r4, r0
 
-	MOV r5, #0 // length
+	MOV r5, #0 // counter
 	MOV r6, #1000 // current place. 1000 is good 'nuff
 	MOV r7, #10 // place divisor
 
@@ -131,9 +131,9 @@ _itos_leave:
 print:
 		PUSH {r4-r11}
 
-		MOV r7, #0x4 //Write 
+		MOV r7, #0x4 //Write
 		MOV r0, #0x1 //stdout
-		LDR r1, =buff 
+		LDR r1, =buff
 		MOV r2, #0x8 //8 byte stream
 		SVC 0x0
 

@@ -311,7 +311,7 @@ handle_guess:
 	BL get_input
 	BL check_guess
 	CMP r0, #0 // if (check_guess > 0) { print_congratulations } else { print_failure }
-	BEQ _handle_guess_congratulations
+	BNE _handle_guess_congratulations
 
 _handle_guess_failure:
 	LDR r0, =failure

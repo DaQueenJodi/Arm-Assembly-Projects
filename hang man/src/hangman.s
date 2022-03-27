@@ -6,9 +6,9 @@
 check_guess:
 	push {lr}
 	push {r4-r11}
-	mov r5, #0 //counter 
+	mov r5, #0 //counter
 
-	
+
 
 _loop_guess:
 
@@ -19,21 +19,21 @@ _loop_guess:
 
 	//ldrb r2, [r2, r5] // load current byte of hidden_word
 	ldrb r3, [r3, r5] //load current byte of real_word
-	
+
 	// if r3 is null (end of string), then leave
 	cmp r3, #0x0
 	beq leave_guess
 
 	//elif guess is space, then pass
-	cmp r3, #0x20 
+	cmp r3, #0x20
 	beq _guess_space
 
-	//elif guess == current byte of real world, then  
-	cmp r3, r1 
+	//elif guess == current byte of real world, then
+	cmp r3, r1
 	beq _correct_guess
 
-	//else, then just increment counter 
-	add r5, r5, #0x1 
+	//else, then just increment counter
+	add r5, r5, #0x1
 	b _loop_guess
 
 _guess_space:
@@ -58,12 +58,12 @@ leave_guess:
 read_input:
 	push {lr}
 	push {r4-r11}
-		
+
 	push {r1}
 	push {r0}
 
 	mov r7, #0x3
-	mov r0, #0x0 
+	mov r0, #0x0
 	pop {r1}
 	pop {r2}
 	svc 0x0
@@ -75,7 +75,7 @@ read_input:
 check_string:
 	push {lr}
 	push {r4-r11}
-	mov r3, #0 //counter 
+	mov r3, #0 //counter
 
 loop_string:
 	ldr r4, =hidden_word
@@ -85,7 +85,7 @@ loop_string:
 	add r3, r3, #1 //increment counter
 
 	cmp r2, #0x0
-	beq leave_string 
+	beq leave_string
 	cmp r1, r2
 	beq loop_string
 	b leave_string
@@ -99,10 +99,10 @@ leave_string:
 	pop {pc}
 
 
-nl: 
+nl:
 	push {lr}
 	push {r4-r11}
-	
+
 	//pop {r1}
 	mov r7, #0x4
 	mov r0, #0x1
@@ -111,9 +111,9 @@ nl:
 	svc 0x0
 
 	pop {r4-r11}
-	pop {pc}
+	bx lr
 //assumes r1 is the message to print and r2 is the lenght of the message
-print_str: 
+print_str:
 	push {lr}
 	push {r4-r11}
 
@@ -128,19 +128,19 @@ print_str:
 main_loop:
 	push {lr}
 	push {r4-r11}
-		
+
 	// print hidden word
 	ldr r1, =hidden_word
 	ldr r2, =word_len
 	bl print_str
-	bl nl 
+	bl nl
 
 	// set guess, then see if guess is in real_word and replace hidden_word accordingly
 
 	ldr r2, =guess_prompt_len
-	ldr r1, =guess_prompt 
+	ldr r1, =guess_prompt
 	bl print_str
-	 
+
 	ldr r0, =guess
 	mov r1, #0x1 // 1 char answer
 	bl read_input
@@ -161,7 +161,7 @@ gen_hidden_word:
 	mov r7, #0x5f //underscore
 	ldr r4, =real_word
 	ldr r2, =hidden_word
-	
+
 
 _hidden_word_loop:
 	ldrb r1, [r4, r5] // curr byte of real_word
@@ -169,9 +169,9 @@ _hidden_word_loop:
 
 	//if NULL, leave loop (word is done):
 	cmp r1, #0x0
-	beq leave_hidden_loop 
+	beq leave_hidden_loop
 	//if no space, add underscore to hidden_word:
-	cmp r1, #0x20 
+	cmp r1, #0x20
 	bne _add_underscore
 	//else add a space:
 _add_space:
@@ -180,7 +180,7 @@ _add_space:
 _add_underscore:
 	strb r7, [r2, r5]
 	b _hidden_word_loop
-		
+
 leave_hidden_loop:
 // print hidden_word then real_word; just for debug
 	ldr r2, =word_len
@@ -194,14 +194,14 @@ leave_hidden_loop:
 	pop {r4-r11}
 	pop {pc}
 	//b main_loop
-_start:	
-	
-	bl gen_hidden_word
-	bl main_loop 
+_start:
 
-	//exit successfully 
+	bl gen_hidden_word
+	bl main_loop
+
+	//exit successfully
 	mov r7, #0x1
-	mov r0, #0x1
+	mov r0, #0x0
 	svc 0x0
 
 
