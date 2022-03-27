@@ -48,19 +48,13 @@ _main_loop_out_of_lives:
 	LDR r1, =word_len
 	BL print
 	BL nl
-	MOV r0, #0
-	POP {r4-r11}
-	POP {lr}
-	BX lr
+	B _main_loop_exit
 
 _main_loop_win:
 	LDR r0, =you_win
 	LDR r1, =you_win_len
 	BL print
-	MOV r0, #1
-	POP {r4-r11}
-	POP {lr}
-	BX lr
+	B _main_loop_exit
 
 _start:
 	BL gen_hidden_word
