@@ -28,7 +28,7 @@ _loop_guess:
 	cmp r3, #0x20
 	beq _guess_space
 
-	//elif guess == current byte of real world, then
+	//elif guess == current byte of real word, then
 	cmp r3, r1
 	beq _correct_guess
 

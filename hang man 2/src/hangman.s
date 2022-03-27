@@ -4,25 +4,36 @@
 
 main_loop:
 	PUSH {r4-r11}
+	BL print_hidden_word
+  BL nl
+
 
 _main_loop_loop:
+	LDR r4, =lives
+	LDRB r0, [r4]
+	CMP r0, #0
+	BEQ _main_loop_out_of_lives
+	BL itos
+	BL print
+	BL nl
+
+	//LDR r0, =word
+	//LDR r1, =word_len
+	//BL print
+	//BL nl
+
+
+	BL handle_guess
+	CMP r0, #0
+	BEQ _main_loop_lose_a_life
 
 	BL check_word
 	CMP r0, #0
 	BNE _main_loop_win
 
-	LDR r4, =lives
-	LDRB r0, [r4]
-	BL itos
-	BL print
-	BL nl
-
 	BL print_hidden_word
-	BL nl
+  BL nl
 
-	BL handle_guess
-	CMP r0, #0
-	BEQ _main_loop_lose_a_life
 
 	B _main_loop_loop
 
@@ -54,6 +65,7 @@ _main_loop_win:
 	LDR r0, =you_win
 	LDR r1, =you_win_len
 	BL print
+	BL print_num_lives
 	B _main_loop_exit
 
 _start:
@@ -68,6 +80,28 @@ print_hidden_word:
 	LDR r0, =hidden_word
 	LDR r1, =word_len
 	BL print
+
+	POP {r4-r11}
+	POP {lr}
+	BX lr
+
+print_num_lives:
+	PUSH {lr}
+	PUSH {r4-r11}
+
+	LDR r0, =num_of_lives
+	LDR r1, =num_of_lives_len
+	BL print
+
+	LDR r0, =lives
+	LDR r0, [r0]
+	BL itos
+	BL print
+
+	LDR r0, =num_of_lives2
+	LDR r1, =num_of_lives2_len
+	BL print
+	BL nl
 
 	POP {r4-r11}
 	POP {lr}
@@ -127,28 +161,28 @@ gen_hidden_word:
 
 _gen_hidden_word_loop:
 	LDRB r7, [r4, r6] // load current byte
-	ADD r6, r6, #1 // increment counter
+	ADD r6, r6, #1 // store current memory location of hidden_word
 	CMP r7, #0x0 // check if ended
 	BEQ _gen_hidden_word_leave
 	CMP r7, #0x20 // space
 	BNE _gen_hidden_word_add_underscore
 
 _gen_hidden_word_add_space:
-	MOV r7, #0x2020
-	STRB r7, [r5, r6]
+	MOV r10, #0x20
+	STRB r10, [r5, r6]
 	B _gen_hidden_word_loop
 
 	_gen_hidden_word_add_underscore:
-	MOV r7, #0x5F
-	STRB r7, [r5, r6]
+	MOV r10, #0x5F
+	STRB r10, [r5, r6]
 	B _gen_hidden_word_loop
 
 	_gen_hidden_word_leave:
-	LDR r5, =hidden_word
-	MOV r8, #0xa // new line
-	ADD r6, r6, #1
-	STRB r8, [r5, r6]
-	MOV r0, r5
+//  LDR r5, =hidden_word
+//  MOV r10, #0xa // new line
+//	ADD r6, r6, #1
+//	STRB r9, [r8]
+  MOV r0, r5
 	POP {r4-r11}
 	BX lr
 // int get_len(const char* string)
@@ -261,6 +295,7 @@ check_guess:
 	MOV r10, #0 // correctness counter
 _check_guess_loop:
 	LDRB r8, [r5, r7] // load current byte of real word
+	//ADD r6, r6, #1 // increment memory adress
 	ADD r7, r7, #1 // increment counter
 	CMP r8, #0x0 // see if the word has ended
 	BEQ _check_guess_leave
@@ -285,30 +320,35 @@ check_word:
 	LDR r4, =hidden_word
 	MOV r5, #0x0 // current byte of hidden_word
 	MOV r6, #1 // counter
+
 _check_word_loop:
 	LDRB r7, [r4, r6] // load current byte of hidden word
 	CMP r7, #0x0 // see if done
-	BNE _check_word_success
+	BEQ _check_word_success
 	ADD r6, r6, #1 // increment counter
-	CMP r7, #0x5F
+	CMP r7, #0x5F // underscore
 	BNE _check_word_loop
+
 _check_guess_failed:
 	MOV r0, #0 // return false
-	POP {r4-r11}
-	BX lr
+	B _check_word_leave
+
 _check_word_success:
 	MOV r0, #1 // return true
+	B _check_word_leave
+
+_check_word_leave:
 	POP {r4-r11}
 	BX lr
+
+
 handle_guess:
 	PUSH {lr}
 	PUSH {r4-r11}
-	MOV r4, #1 // result
+	MOV r4, #0 // result
 
-
-	//BL prompt_guess
-	//BL nl
-	BL get_input
+	BL prompt_guess
+	BL nl
 	BL check_guess
 	CMP r0, #0 // if (check_guess > 0) { print_congratulations } else { print_failure }
 	BNE _handle_guess_congratulations
@@ -327,6 +367,7 @@ _handle_guess_congratulations:
 	BL print
 	MOV r4, #1
 	B _handle_guess_leave
+
 _handle_guess_leave:
 	MOV r0, r4
 	POP {r4-r11}
@@ -357,5 +398,11 @@ game_over:
 you_win:
 	.asciz "You win. Congratulations!\n"
 	you_win_len = .-you_win
+num_of_lives:
+	.asciz "you have "
+	num_of_lives_len = .-num_of_lives
+num_of_lives2:
+	.asciz " lives left"
+	num_of_lives2_len = .-num_of_lives2
 lives: .int 10
 hidden_word: .skip 16
