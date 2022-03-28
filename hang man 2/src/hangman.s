@@ -9,18 +9,14 @@ main_loop:
 
 
 _main_loop_loop:
+
+
 	LDR r4, =lives
 	LDRB r0, [r4]
 	CMP r0, #0
 	BEQ _main_loop_out_of_lives
-	BL itos
-	BL print
-	BL nl
+	BL print_num_lives
 
-	//LDR r0, =word
-	//LDR r1, =word_len
-	//BL print
-	//BL nl
 
 
 	BL handle_guess
@@ -46,7 +42,7 @@ _main_loop_exit:
 _main_loop_lose_a_life:
  // subtract a life
 	LDR r4, =lives
-	LDR r5, [r4]
+	LDRB r5, [r4]
 	SUB r5, r5, #1
 	STRB r5, [r4]
 	B _main_loop_loop
@@ -65,7 +61,7 @@ _main_loop_win:
 	LDR r0, =you_win
 	LDR r1, =you_win_len
 	BL print
-	BL print_num_lives
+	//BL print_num_lives
 	B _main_loop_exit
 
 _start:
@@ -273,7 +269,7 @@ get_input:
 	MOV r7, #3 // Read
 	MOV r0, #0 // stdin
 	LDR r1, =input
-	MOV r2, #0x1
+	MOV r2, #0x2
 	SWI 0
 	LDR r0, =input
 
@@ -378,7 +374,7 @@ _handle_guess_leave:
 // used by print_implicit
 temp_buff: .skip 64
 // used by get_guess
-input: .skip 1 // 1 letter at a time
+input: .skip 2 // 1 letter at a time
 
 word:
 	.asciz "we le p" // 16 byte word
